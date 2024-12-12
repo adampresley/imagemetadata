@@ -100,27 +100,32 @@ func getXMPData(xmpData []byte, image *ImageData) error {
 func xmpGetKeywords(doc *xmp.Document) []string {
 	result := []string{}
 	ns := doc.FindNs("dc", "")
-	node := doc.FindNode(ns)
 
-	/*
-	   * Keywords are found in <dc:subject><rdf:Bag><rdf:li>value</rdf:li></rdf:Bag></dc:subject>
-	   * Example:
-	   *   <rdf:Description rdf:about=''
-	           xmlns:dc='http://purl.org/dc/elements/1.1/'>
-	           <dc:subject>
-	               <rdf:Bag>
-	                   <rdf:li>2024</rdf:li>
-	                   <rdf:li>Holiday</rdf:li>
-	                   <rdf:li>Thanksgiving</rdf:li>
-	               </rdf:Bag>
-	           </dc:subject>
-	       </rdf:Description>
-	*/
-	for _, container := range node.Nodes {
-		if !container.IsZero() && container.XMLName.Local == "dc:subject" {
-			for _, bag := range container.Nodes {
-				for _, li := range bag.Nodes {
-					result = append(result, li.Value)
+	if ns != nil {
+		node := doc.FindNode(ns)
+
+		/*
+		   * Keywords are found in <dc:subject><rdf:Bag><rdf:li>value</rdf:li></rdf:Bag></dc:subject>
+		   * Example:
+		   *   <rdf:Description rdf:about=''
+		           xmlns:dc='http://purl.org/dc/elements/1.1/'>
+		           <dc:subject>
+		               <rdf:Bag>
+		                   <rdf:li>2024</rdf:li>
+		                   <rdf:li>Holiday</rdf:li>
+		                   <rdf:li>Thanksgiving</rdf:li>
+		               </rdf:Bag>
+		           </dc:subject>
+		       </rdf:Description>
+		*/
+		if node != nil {
+			for _, container := range node.Nodes {
+				if !container.IsZero() && container.XMLName.Local == "dc:subject" {
+					for _, bag := range container.Nodes {
+						for _, li := range bag.Nodes {
+							result = append(result, li.Value)
+						}
+					}
 				}
 			}
 		}
@@ -132,14 +137,17 @@ func xmpGetKeywords(doc *xmp.Document) []string {
 func xmpGetPeople(doc *xmp.Document) []string {
 	result := []string{}
 	ns := doc.FindNs("Iptc4xmpExt", "")
-	node := doc.FindNode(ns)
 
-	if node != nil {
-		for _, container := range node.Nodes {
-			if !container.IsZero() && container.XMLName.Local == "Iptc4xmpExt:PersonInImage" {
-				for _, bag := range container.Nodes {
-					for _, li := range bag.Nodes {
-						result = append(result, li.Value)
+	if ns != nil {
+		node := doc.FindNode(ns)
+
+		if node != nil {
+			for _, container := range node.Nodes {
+				if !container.IsZero() && container.XMLName.Local == "Iptc4xmpExt:PersonInImage" {
+					for _, bag := range container.Nodes {
+						for _, li := range bag.Nodes {
+							result = append(result, li.Value)
+						}
 					}
 				}
 			}
@@ -152,11 +160,14 @@ func xmpGetPeople(doc *xmp.Document) []string {
 func xmpGetLensModel(doc *xmp.Document) string {
 	result := ""
 	ns := doc.FindNs("aux", "")
-	node := doc.FindNode(ns)
 
-	if node != nil {
-		if value, err := node.GetPath("aux:Lens"); err == nil {
-			result = value
+	if ns != nil {
+		node := doc.FindNode(ns)
+
+		if node != nil {
+			if value, err := node.GetPath("aux:Lens"); err == nil {
+				result = value
+			}
 		}
 	}
 
@@ -166,11 +177,14 @@ func xmpGetLensModel(doc *xmp.Document) string {
 func xmpGetTitle(doc *xmp.Document) string {
 	result := ""
 	ns := doc.FindNs("dc", "")
-	node := doc.FindNode(ns)
 
-	if node != nil {
-		if value, err := node.GetPath("dc:title/rdf:Alt/rdf:li"); err == nil {
-			result = value
+	if ns != nil {
+		node := doc.FindNode(ns)
+
+		if node != nil {
+			if value, err := node.GetPath("dc:title/rdf:Alt/rdf:li"); err == nil {
+				result = value
+			}
 		}
 	}
 
