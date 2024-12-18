@@ -46,20 +46,19 @@ func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 	}
 
 	if err = getExifData(input, result); err != nil {
-		return result, err
+		fmt.Printf("could not get EXIF data: %v\n", err)
 	}
 
 	if _, err = input.Seek(0, 0); err != nil {
 		return result, fmt.Errorf("error resetting file reader to zero after reading EXIF data: %w", err)
 	}
 
-	fmt.Printf("about to get XMP data...\n")
 	if xmpDataBlock, err = getXMPDataBlock(input); err != nil {
-		return result, fmt.Errorf("error reading XMP data block in file: %w", err)
+		fmt.Printf("could not get XMP data block: %v\n", err)
 	}
 
 	if err = getXMPData(xmpDataBlock, result); err != nil {
-		return result, fmt.Errorf("error getting XMP data: %w", err)
+		fmt.Printf("error getting XMP data: %v\n", err)
 	}
 
 	return result, nil
