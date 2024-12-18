@@ -13,55 +13,62 @@ import (
 
 func getXMPDataBlock(input io.Reader) ([]byte, error) {
 	var (
-		err error
-		n   int
+		err        error
+		n          int
+		foundStart bool
+		totalBytes int
+		xmpBuffer  bytes.Buffer
 	)
 
 	startMarker := []byte(`<x:xmpmeta`)
 	endMarker := []byte(`</x:xmpmeta>`)
-	foundStart := false
-
-	var xmpBuffer bytes.Buffer
 	buffer := make([]byte, 1024)
+	startIndex := -1
+	endIndex := -1
 
 	reader := bufio.NewReader(input)
 
 	for {
 		n, err = reader.Read(buffer)
-
 		if err != nil && err != io.EOF {
-			return []byte{}, fmt.Errorf("error performing read operation: %w", err)
+			return nil, fmt.Errorf("error reading file: %w", err)
 		}
 
-		if n == 0 {
+		if n == 0 { // End of file
 			break
 		}
 
-		chunk := buffer[:n]
+		totalBytes += n
+		if _, err = xmpBuffer.Write(buffer); err != nil {
+			return nil, fmt.Errorf("error writing XMP chunk to buffer: %w", err)
+		}
+
+		chunk := xmpBuffer.Bytes()
 
 		if !foundStart {
-			startIndex := bytes.Index(chunk, startMarker)
+			// Look for the start marker
+			startIndex = bytes.Index(chunk, startMarker)
 
 			if startIndex != -1 {
 				foundStart = true
-				xmpBuffer.Write(chunk[startIndex:])
 			}
 		} else {
-			xmpBuffer.Write(chunk)
-			endIdx := bytes.Index(chunk, endMarker)
+			// Look for the end marker
+			endIndex = bytes.Index(chunk, endMarker)
 
-			if endIdx != -1 {
-				xmpBuffer.Truncate(xmpBuffer.Len() - len(chunk[endIdx+len(endMarker):]))
+			if endIndex != -1 {
 				break
 			}
 		}
 	}
 
-	if xmpBuffer.Len() == 0 {
-		return []byte{}, fmt.Errorf("no xmp data found")
+	if startIndex == -1 && endIndex == -1 {
+		return nil, fmt.Errorf("no XMP data found")
 	}
 
-	return xmpBuffer.Bytes(), nil
+	b := xmpBuffer.Bytes()
+	header := b[startIndex : endIndex+len(endMarker)]
+	return header, nil
 }
 
 func getXMPData(xmpData []byte, image *ImageData) error {
