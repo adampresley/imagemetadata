@@ -25,11 +25,25 @@ type ImageData struct {
 
 func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 	var (
-		err          error
+		err error
+		// iptcDataBlock []byte
 		xmpDataBlock []byte
 	)
 
 	result := &ImageData{}
+
+	// if iptcDataBlock, err = getIPTCDataBlock(input); err != nil {
+	// 	return result, fmt.Errorf("error reading IPTC data block: %w", err)
+	// }
+
+	// fmt.Printf("IPTC Data Block: %x\n", iptcDataBlock)
+	// if err = readIPTC(input); err != nil {
+	// 	return result, fmt.Errorf("error reading IPTC data: %w", err)
+	// }
+
+	if _, err = input.Seek(0, 0); err != nil {
+		return result, fmt.Errorf("error resetting file reader to zero after reading IPTC data: %w", err)
+	}
 
 	if err = getExifData(input, result); err != nil {
 		return result, err
@@ -39,6 +53,7 @@ func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 		return result, fmt.Errorf("error resetting file reader to zero after reading EXIF data: %w", err)
 	}
 
+	fmt.Printf("about to get XMP data...\n")
 	if xmpDataBlock, err = getXMPDataBlock(input); err != nil {
 		return result, fmt.Errorf("error reading XMP data block in file: %w", err)
 	}
