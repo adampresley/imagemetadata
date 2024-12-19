@@ -1,6 +1,6 @@
 # Image Metadata
 
-This is a small library that pulls metadata from images. Metadata includes things like EXIF and XMP data. It does this using other, well established libraries, then normalizes the data into a single structure.
+This is a small library that pulls metadata from images. Metadata includes things like IPTC, EXIF and XMP data. It does this using other, well established libraries, then normalizes the data into a single structure.
 
 ## 🚀 Getting Started
 

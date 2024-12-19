@@ -1,4 +1,4 @@
-package imagemetadata
+package xmp
 
 import (
 	"bufio"
@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/adampresley/adamgokit/slices"
 	"github.com/honza/go-xmp/xmp"
 )
 
@@ -70,42 +69,6 @@ func getXMPDataBlock(input io.Reader) ([]byte, error) {
 	b := xmpBuffer.Bytes()
 	header := b[startIndex : endIndex+len(endMarker)]
 	return header, nil
-}
-
-func getXMPData(xmpData []byte, image *ImageData) error {
-	var (
-		err error
-	)
-
-	decoder := xmp.NewDecoder(bytes.NewReader(xmpData))
-	doc := &xmp.Document{}
-
-	if err = decoder.Decode(doc); err != nil {
-		return fmt.Errorf("error decoding XMP data: %w", err)
-	}
-
-	image.Keywords = slices.Merge(image.Keywords, xmpGetKeywords(doc))
-	image.People = slices.Merge(image.People, xmpGetPeople(doc))
-
-	if image.Title == "" {
-		image.Title = xmpGetTitle(doc)
-	}
-
-	if image.LensModel == "" {
-		image.LensModel = xmpGetLensModel(doc)
-	}
-
-	lat, long := xmpGetLatitudeLongitude(doc)
-
-	if image.Latitude == 0 {
-		image.Latitude = xmpGpsCoordToFloat(lat)
-	}
-
-	if image.Longitude == 0 {
-		image.Longitude = xmpGpsCoordToFloat(long)
-	}
-
-	return nil
 }
 
 func xmpGetKeywords(doc *xmp.Document) []string {
