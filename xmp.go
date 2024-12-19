@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/adampresley/adamgokit/slices"
 	"github.com/honza/go-xmp/xmp"
 )
 
@@ -83,9 +84,12 @@ func getXMPData(xmpData []byte, image *ImageData) error {
 		return fmt.Errorf("error decoding XMP data: %w", err)
 	}
 
-	image.Keywords = xmpGetKeywords(doc)
-	image.People = xmpGetPeople(doc)
-	image.Title = xmpGetTitle(doc)
+	image.Keywords = slices.Merge(image.Keywords, xmpGetKeywords(doc))
+	image.People = slices.Merge(image.People, xmpGetPeople(doc))
+
+	if image.Title == "" {
+		image.Title = xmpGetTitle(doc)
+	}
 
 	if image.LensModel == "" {
 		image.LensModel = xmpGetLensModel(doc)

@@ -3,6 +3,7 @@ module github.com/adampresley/imagemetadata
 go 1.23.3
 
 require (
+	github.com/adampresley/adamgokit v1.4.0
 	github.com/dsoprea/go-iptc v0.0.0-20200610044640-bc9ca208b413
 	github.com/honza/go-xmp v0.0.0-20210728092137-cbbdc2f61d8a
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
