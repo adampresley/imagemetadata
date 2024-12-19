@@ -31,6 +31,8 @@ func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 	)
 
 	result := &ImageData{}
+	gotExif := true
+	gotXMP := true
 
 	// if iptcDataBlock, err = getIPTCDataBlock(input); err != nil {
 	// 	return result, fmt.Errorf("error reading IPTC data block: %w", err)
@@ -46,7 +48,7 @@ func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 	}
 
 	if err = getExifData(input, result); err != nil {
-		fmt.Printf("could not get EXIF data: %v\n", err)
+		gotExif = false
 	}
 
 	if _, err = input.Seek(0, 0); err != nil {
@@ -54,14 +56,22 @@ func NewFromJPEG(input io.ReadSeeker) (*ImageData, error) {
 	}
 
 	if xmpDataBlock, err = getXMPDataBlock(input); err != nil {
-		fmt.Printf("could not get XMP data block: %v\n", err)
+		gotXMP = false
 	}
 
-	if err = getXMPData(xmpDataBlock, result); err != nil {
-		fmt.Printf("error getting XMP data: %v\n", err)
+	if gotXMP {
+		if err = getXMPData(xmpDataBlock, result); err != nil {
+			gotXMP = false
+		}
 	}
 
-	return result, nil
+	err = nil
+
+	if !gotExif && !gotXMP {
+		err = fmt.Errorf("no metadata found")
+	}
+
+	return result, err
 }
 
 func (id ImageData) String() string {
