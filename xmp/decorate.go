@@ -25,6 +25,10 @@ func DecorateXMP(image *imagemodel.ImageData, input io.ReadSeeker) (bool, error)
 		return false, fmt.Errorf("error reading XMP header: %w", err)
 	}
 
+	if xmpHeader == nil {
+		return false, nil
+	}
+
 	decoder := xmp.NewDecoder(bytes.NewReader(xmpHeader))
 	doc := &xmp.Document{}
 	gotXMP := false

@@ -63,7 +63,8 @@ func getXMPDataBlock(input io.Reader) ([]byte, error) {
 	}
 
 	if startIndex == -1 && endIndex == -1 {
-		return nil, fmt.Errorf("no XMP data found")
+		return nil, nil
+		// return nil, fmt.Errorf("no XMP data found")
 	}
 
 	b := xmpBuffer.Bytes()
