@@ -104,7 +104,14 @@ func getIPTCDataBlock(input io.ReadSeeker) ([]byte, error) {
 			return nil, fmt.Errorf("error reading block buffer (len %d, offset %d): %w", blockLength, blockStartIndex, err)
 		}
 
-		return blockBuffer, nil
+		firstMarker := bytes.Index(blockBuffer, []byte("8BIM"))
+		lastMarker := bytes.LastIndex(blockBuffer, []byte("8BIM"))
+
+		if lastMarker <= firstMarker {
+			return nil, fmt.Errorf("invalid IPTC block (didn't find 8BIM markers)")
+		}
+
+		return blockBuffer[:lastMarker], nil
 	}
 
 	return nil, fmt.Errorf("IPTC data not found in file")
