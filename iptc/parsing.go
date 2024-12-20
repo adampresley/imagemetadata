@@ -78,7 +78,7 @@ func getIPTCDataBlock(input io.ReadSeeker) ([]byte, error) {
 
 		// Search for APP13 marker (0xFFED)
 		for i = 0; i < int64(len(buffer)-1); i++ {
-			if buffer[i] == 0xFF && buffer[i+1] == 0xED {
+			if buffer[i] == 0xFF && buffer[i+1] == 0xED && (i+4) < int64(len(buffer)) {
 				// Length of APP13 segment (next 2 bytes, big-endian)
 				blockLength = int64(binary.BigEndian.Uint16(buffer[i+2 : i+4]))
 				blockStartIndex += i + 4
