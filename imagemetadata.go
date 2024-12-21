@@ -3,18 +3,22 @@ package imagemetadata
 import (
 	"fmt"
 	"io"
-	"strings"
 
-	"github.com/adampresley/adamgokit/slices"
 	"github.com/adampresley/imagemetadata/exif"
 	"github.com/adampresley/imagemetadata/imagemodel"
 	"github.com/adampresley/imagemetadata/iptc"
 	"github.com/adampresley/imagemetadata/xmp"
 )
 
-func NewFromJPEG(input io.ReadSeeker) (*imagemodel.ImageData, error) {
+type ReadResult struct {
+	Metadata *imagemodel.ImageData
+	Errors   []error
+}
+
+func NewFromJPEG(input io.ReadSeeker) (ReadResult, error) {
 	var (
-		err error
+		err      error
+		finalErr error
 
 		gotIPTC bool
 		gotEXIF bool
@@ -39,9 +43,11 @@ func NewFromJPEG(input io.ReadSeeker) (*imagemodel.ImageData, error) {
 	gotAnythingUseful := gotIPTC || gotEXIF || gotXMP
 
 	if !gotAnythingUseful {
-		errorMessages := strings.Join(slices.Map(errors, func(e error, index int) string { return e.Error() }), " :: ")
-		err = fmt.Errorf("no metadata found: %s", errorMessages)
+		finalErr = fmt.Errorf("no metadata found")
 	}
 
-	return result, err
+	return ReadResult{
+		Metadata: result,
+		Errors:   errors,
+	}, finalErr
 }
